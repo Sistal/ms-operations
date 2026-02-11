@@ -1,0 +1,1214 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para operaciones del sistema SistaL.",
+        "title": "MS Operations API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8083",
+    "basePath": "/api/v1",
+    "paths": {
+        "/despachos": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene lista paginada de despachos con filtros opcionales",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Despachos"
+                ],
+                "summary": "Obtener despachos",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Número de página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elementos por página",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de estado",
+                        "name": "id_estado_despacho",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtrar por sucursal",
+                        "name": "sucursal",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha desde (YYYY-MM-DD)",
+                        "name": "fecha_desde",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha hasta (YYYY-MM-DD)",
+                        "name": "fecha_hasta",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Búsqueda en guía o voucher",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de despachos con paginación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Crea un nuevo despacho en el sistema",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Despachos"
+                ],
+                "summary": "Crear despacho",
+                "parameters": [
+                    {
+                        "description": "Datos del despacho",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateDespachoDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Despacho creado exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Datos de entrada inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/despachos/{id_despacho}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene detalles completos de un despacho específico",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Despachos"
+                ],
+                "summary": "Obtener despacho por ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del despacho",
+                        "name": "id_despacho",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del despacho",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Despacho no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Actualiza campos de un despacho existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Despachos"
+                ],
+                "summary": "Actualizar despacho",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del despacho",
+                        "name": "id_despacho",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos a actualizar",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdateDespachoDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Despacho actualizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Datos de entrada inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Despacho no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/despachos/{id_despacho}/estado": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Cambia el estado de un despacho",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Despachos"
+                ],
+                "summary": "Cambiar estado de despacho",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del despacho",
+                        "name": "id_despacho",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Nuevo estado",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CambiarEstadoDespachoDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estado actualizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Transición de estado inválida",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Despacho no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/facturas": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene lista paginada de facturas con filtros opcionales",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Facturas"
+                ],
+                "summary": "Obtener facturas",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Número de página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elementos por página",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de estado",
+                        "name": "id_estado",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de empresa",
+                        "name": "id_empresa",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha desde (YYYY-MM-DD)",
+                        "name": "fecha_desde",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha hasta (YYYY-MM-DD)",
+                        "name": "fecha_hasta",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Búsqueda en número de factura",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de facturas con paginación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Crea una nueva factura en el sistema",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Facturas"
+                ],
+                "summary": "Crear factura",
+                "parameters": [
+                    {
+                        "description": "Datos de la factura",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreateFacturaDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Factura creada exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Datos de entrada inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/notificaciones": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "[DEPRECADO] Obtiene notificaciones del usuario autenticado. Migrar a MS-Notifications",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Notificaciones"
+                ],
+                "summary": "Obtener notificaciones (DEPRECADO)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Número de página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elementos por página",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtrar por estado leída (true/false)",
+                        "name": "leida",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de notificaciones",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "No autenticado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/operaciones/dashboard": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene resumen de operaciones para dashboard (hoy, pendientes, alertas, actividad reciente)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Operaciones"
+                ],
+                "summary": "Dashboard de operaciones",
+                "responses": {
+                    "200": {
+                        "description": "Datos del dashboard",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/operaciones/estadisticas": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene estadísticas de peticiones, despachos y facturas con filtros opcionales",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Operaciones"
+                ],
+                "summary": "Obtener estadísticas de operaciones",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Fecha desde (YYYY-MM-DD)",
+                        "name": "fecha_desde",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha hasta (YYYY-MM-DD)",
+                        "name": "fecha_hasta",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de sucursal",
+                        "name": "id_sucursal",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estadísticas completas",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/peticiones": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene lista paginada de peticiones de uniforme con filtros opcionales",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peticiones"
+                ],
+                "summary": "Obtener peticiones",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Número de página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elementos por página",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de funcionario",
+                        "name": "id_funcionario",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de estado",
+                        "name": "id_estado",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de tipo petición",
+                        "name": "id_tipo_peticion",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filtrar por ID de temporada",
+                        "name": "id_temporada",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtrar por maternal (true/false)",
+                        "name": "maternal",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filtrar con/sin despacho (true/false)",
+                        "name": "con_despacho",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha desde (YYYY-MM-DD)",
+                        "name": "fecha_desde",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Fecha hasta (YYYY-MM-DD)",
+                        "name": "fecha_hasta",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Búsqueda en observaciones",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Campo para ordenar (default fecha_registro)",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Orden (asc/desc, default desc)",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de peticiones con paginación",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Crea una nueva petición de uniforme con tallajes asociados",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peticiones"
+                ],
+                "summary": "Crear petición",
+                "parameters": [
+                    {
+                        "description": "Datos de la petición",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CreatePeticionDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Petición creada exitosamente",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Datos de entrada inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/peticiones/{id_peticion}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene detalles completos de una petición específica incluyendo tallajes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peticiones"
+                ],
+                "summary": "Obtener petición por ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID de la petición",
+                        "name": "id_peticion",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles de la petición",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Petición no encontrada",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Actualiza campos de una petición existente",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peticiones"
+                ],
+                "summary": "Actualizar petición",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID de la petición",
+                        "name": "id_peticion",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Datos a actualizar",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.UpdatePeticionDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Petición actualizada",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Datos de entrada inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Petición no encontrada",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/peticiones/{id_peticion}/estado": {
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Cambia el estado de una petición con validación de transiciones",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peticiones"
+                ],
+                "summary": "Cambiar estado de petición",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID de la petición",
+                        "name": "id_peticion",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Nuevo estado",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.CambiarEstadoPeticionDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Estado actualizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Transición de estado inválida",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Petición no encontrada",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/peticiones/{id_peticion}/tallaje": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene el tallaje completo de una petición específica",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Peticiones"
+                ],
+                "summary": "Obtener tallaje de petición",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID de la petición",
+                        "name": "id_peticion",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tallaje de la petición",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Petición no encontrada",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/tipos-peticion": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Obtiene catálogo de tipos de petición disponibles",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catálogos"
+                ],
+                "summary": "Obtener tipos de petición",
+                "responses": {
+                    "200": {
+                        "description": "Lista de tipos de petición",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Error del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handlers.CambiarEstadoDespachoDTO": {
+            "type": "object",
+            "required": [
+                "id_estado_despacho"
+            ],
+            "properties": {
+                "id_estado_despacho": {
+                    "type": "integer"
+                },
+                "responsable_recepcion": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.CambiarEstadoPeticionDTO": {
+            "type": "object",
+            "required": [
+                "id_estado"
+            ],
+            "properties": {
+                "id_estado": {
+                    "type": "integer"
+                },
+                "observacion": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.CreateDespachoDTO": {
+            "type": "object",
+            "required": [
+                "guia_de_despacho",
+                "sucursal"
+            ],
+            "properties": {
+                "fecha_despacho": {
+                    "type": "string"
+                },
+                "guia_de_despacho": {
+                    "type": "string"
+                },
+                "id_estado_despacho": {
+                    "type": "integer"
+                },
+                "id_factura": {
+                    "type": "integer"
+                },
+                "numero_voucher": {
+                    "type": "string"
+                },
+                "responsable_recepcion": {
+                    "type": "string"
+                },
+                "sucursal": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.CreateFacturaDTO": {
+            "type": "object",
+            "required": [
+                "id_empresa",
+                "monto_total",
+                "numero_factura"
+            ],
+            "properties": {
+                "fecha_emision": {
+                    "type": "string"
+                },
+                "id_empresa": {
+                    "type": "integer"
+                },
+                "id_estado": {
+                    "type": "integer"
+                },
+                "monto_total": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "numero_factura": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.CreatePeticionDTO": {
+            "type": "object",
+            "required": [
+                "id_funcionario",
+                "id_tipo_peticion",
+                "id_uniforme",
+                "tallaje"
+            ],
+            "properties": {
+                "id_estado": {
+                    "type": "integer"
+                },
+                "id_funcionario": {
+                    "type": "integer"
+                },
+                "id_temporada": {
+                    "type": "integer"
+                },
+                "id_tipo_peticion": {
+                    "type": "integer"
+                },
+                "id_uniforme": {
+                    "type": "integer"
+                },
+                "maternal": {
+                    "type": "boolean"
+                },
+                "observacion": {
+                    "type": "string"
+                },
+                "tallaje": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/handlers.TallajeItemDTO"
+                    }
+                }
+            }
+        },
+        "handlers.TallajeItemDTO": {
+            "type": "object",
+            "required": [
+                "cantidad",
+                "id_prenda",
+                "valor_talla"
+            ],
+            "properties": {
+                "cantidad": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "id_prenda": {
+                    "type": "integer"
+                },
+                "valor_talla": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.UpdateDespachoDTO": {
+            "type": "object",
+            "properties": {
+                "id_estado_despacho": {
+                    "type": "integer"
+                },
+                "id_factura": {
+                    "type": "integer"
+                },
+                "numero_voucher": {
+                    "type": "string"
+                },
+                "responsable_recepcion": {
+                    "type": "string"
+                }
+            }
+        },
+        "handlers.UpdatePeticionDTO": {
+            "type": "object",
+            "properties": {
+                "id_despacho": {
+                    "type": "integer"
+                },
+                "id_estado": {
+                    "type": "integer"
+                },
+                "maternal": {
+                    "type": "boolean"
+                },
+                "observacion": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Token de autenticación JWT en formato Bearer",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

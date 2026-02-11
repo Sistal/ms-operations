@@ -1,0 +1,801 @@
+basePath: /api/v1
+definitions:
+  handlers.CambiarEstadoDespachoDTO:
+    properties:
+      id_estado_despacho:
+        type: integer
+      responsable_recepcion:
+        type: string
+    required:
+    - id_estado_despacho
+    type: object
+  handlers.CambiarEstadoPeticionDTO:
+    properties:
+      id_estado:
+        type: integer
+      observacion:
+        type: string
+    required:
+    - id_estado
+    type: object
+  handlers.CreateDespachoDTO:
+    properties:
+      fecha_despacho:
+        type: string
+      guia_de_despacho:
+        type: string
+      id_estado_despacho:
+        type: integer
+      id_factura:
+        type: integer
+      numero_voucher:
+        type: string
+      responsable_recepcion:
+        type: string
+      sucursal:
+        type: string
+    required:
+    - guia_de_despacho
+    - sucursal
+    type: object
+  handlers.CreateFacturaDTO:
+    properties:
+      fecha_emision:
+        type: string
+      id_empresa:
+        type: integer
+      id_estado:
+        type: integer
+      monto_total:
+        minimum: 0
+        type: number
+      numero_factura:
+        type: string
+    required:
+    - id_empresa
+    - monto_total
+    - numero_factura
+    type: object
+  handlers.CreatePeticionDTO:
+    properties:
+      id_estado:
+        type: integer
+      id_funcionario:
+        type: integer
+      id_temporada:
+        type: integer
+      id_tipo_peticion:
+        type: integer
+      id_uniforme:
+        type: integer
+      maternal:
+        type: boolean
+      observacion:
+        type: string
+      tallaje:
+        items:
+          $ref: '#/definitions/handlers.TallajeItemDTO'
+        minItems: 1
+        type: array
+    required:
+    - id_funcionario
+    - id_tipo_peticion
+    - id_uniforme
+    - tallaje
+    type: object
+  handlers.TallajeItemDTO:
+    properties:
+      cantidad:
+        minimum: 1
+        type: integer
+      id_prenda:
+        type: integer
+      valor_talla:
+        type: string
+    required:
+    - cantidad
+    - id_prenda
+    - valor_talla
+    type: object
+  handlers.UpdateDespachoDTO:
+    properties:
+      id_estado_despacho:
+        type: integer
+      id_factura:
+        type: integer
+      numero_voucher:
+        type: string
+      responsable_recepcion:
+        type: string
+    type: object
+  handlers.UpdatePeticionDTO:
+    properties:
+      id_despacho:
+        type: integer
+      id_estado:
+        type: integer
+      maternal:
+        type: boolean
+      observacion:
+        type: string
+    type: object
+host: localhost:8083
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API para operaciones del sistema SistaL.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: MS Operations API
+  version: "1.0"
+paths:
+  /despachos:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene lista paginada de despachos con filtros opcionales
+      parameters:
+      - description: Número de página
+        in: query
+        name: page
+        type: integer
+      - description: Elementos por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por ID de estado
+        in: query
+        name: id_estado_despacho
+        type: integer
+      - description: Filtrar por sucursal
+        in: query
+        name: sucursal
+        type: string
+      - description: Fecha desde (YYYY-MM-DD)
+        in: query
+        name: fecha_desde
+        type: string
+      - description: Fecha hasta (YYYY-MM-DD)
+        in: query
+        name: fecha_hasta
+        type: string
+      - description: Búsqueda en guía o voucher
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de despachos con paginación
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener despachos
+      tags:
+      - Despachos
+    post:
+      consumes:
+      - application/json
+      description: Crea un nuevo despacho en el sistema
+      parameters:
+      - description: Datos del despacho
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateDespachoDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Despacho creado exitosamente
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Datos de entrada inválidos
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Crear despacho
+      tags:
+      - Despachos
+  /despachos/{id_despacho}:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene detalles completos de un despacho específico
+      parameters:
+      - description: ID del despacho
+        in: path
+        name: id_despacho
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detalles del despacho
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: ID inválido
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Despacho no encontrado
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener despacho por ID
+      tags:
+      - Despachos
+    put:
+      consumes:
+      - application/json
+      description: Actualiza campos de un despacho existente
+      parameters:
+      - description: ID del despacho
+        in: path
+        name: id_despacho
+        required: true
+        type: integer
+      - description: Datos a actualizar
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdateDespachoDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Despacho actualizado
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Datos de entrada inválidos
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Despacho no encontrado
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Actualizar despacho
+      tags:
+      - Despachos
+  /despachos/{id_despacho}/estado:
+    patch:
+      consumes:
+      - application/json
+      description: Cambia el estado de un despacho
+      parameters:
+      - description: ID del despacho
+        in: path
+        name: id_despacho
+        required: true
+        type: integer
+      - description: Nuevo estado
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CambiarEstadoDespachoDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Estado actualizado
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Transición de estado inválida
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Despacho no encontrado
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cambiar estado de despacho
+      tags:
+      - Despachos
+  /facturas:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene lista paginada de facturas con filtros opcionales
+      parameters:
+      - description: Número de página
+        in: query
+        name: page
+        type: integer
+      - description: Elementos por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por ID de estado
+        in: query
+        name: id_estado
+        type: integer
+      - description: Filtrar por ID de empresa
+        in: query
+        name: id_empresa
+        type: integer
+      - description: Fecha desde (YYYY-MM-DD)
+        in: query
+        name: fecha_desde
+        type: string
+      - description: Fecha hasta (YYYY-MM-DD)
+        in: query
+        name: fecha_hasta
+        type: string
+      - description: Búsqueda en número de factura
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de facturas con paginación
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener facturas
+      tags:
+      - Facturas
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva factura en el sistema
+      parameters:
+      - description: Datos de la factura
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreateFacturaDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Factura creada exitosamente
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Datos de entrada inválidos
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Crear factura
+      tags:
+      - Facturas
+  /notificaciones:
+    get:
+      consumes:
+      - application/json
+      description: '[DEPRECADO] Obtiene notificaciones del usuario autenticado. Migrar
+        a MS-Notifications'
+      parameters:
+      - description: Número de página
+        in: query
+        name: page
+        type: integer
+      - description: Elementos por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por estado leída (true/false)
+        in: query
+        name: leida
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de notificaciones
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: No autenticado
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener notificaciones (DEPRECADO)
+      tags:
+      - Notificaciones
+  /operaciones/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene resumen de operaciones para dashboard (hoy, pendientes,
+        alertas, actividad reciente)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Datos del dashboard
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Dashboard de operaciones
+      tags:
+      - Operaciones
+  /operaciones/estadisticas:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene estadísticas de peticiones, despachos y facturas con filtros
+        opcionales
+      parameters:
+      - description: Fecha desde (YYYY-MM-DD)
+        in: query
+        name: fecha_desde
+        type: string
+      - description: Fecha hasta (YYYY-MM-DD)
+        in: query
+        name: fecha_hasta
+        type: string
+      - description: Filtrar por ID de sucursal
+        in: query
+        name: id_sucursal
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Estadísticas completas
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener estadísticas de operaciones
+      tags:
+      - Operaciones
+  /peticiones:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene lista paginada de peticiones de uniforme con filtros opcionales
+      parameters:
+      - description: Número de página
+        in: query
+        name: page
+        type: integer
+      - description: Elementos por página
+        in: query
+        name: limit
+        type: integer
+      - description: Filtrar por ID de funcionario
+        in: query
+        name: id_funcionario
+        type: integer
+      - description: Filtrar por ID de estado
+        in: query
+        name: id_estado
+        type: integer
+      - description: Filtrar por ID de tipo petición
+        in: query
+        name: id_tipo_peticion
+        type: integer
+      - description: Filtrar por ID de temporada
+        in: query
+        name: id_temporada
+        type: integer
+      - description: Filtrar por maternal (true/false)
+        in: query
+        name: maternal
+        type: string
+      - description: Filtrar con/sin despacho (true/false)
+        in: query
+        name: con_despacho
+        type: string
+      - description: Fecha desde (YYYY-MM-DD)
+        in: query
+        name: fecha_desde
+        type: string
+      - description: Fecha hasta (YYYY-MM-DD)
+        in: query
+        name: fecha_hasta
+        type: string
+      - description: Búsqueda en observaciones
+        in: query
+        name: search
+        type: string
+      - description: Campo para ordenar (default fecha_registro)
+        in: query
+        name: sort_by
+        type: string
+      - description: Orden (asc/desc, default desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de peticiones con paginación
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener peticiones
+      tags:
+      - Peticiones
+    post:
+      consumes:
+      - application/json
+      description: Crea una nueva petición de uniforme con tallajes asociados
+      parameters:
+      - description: Datos de la petición
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CreatePeticionDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Petición creada exitosamente
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Datos de entrada inválidos
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Crear petición
+      tags:
+      - Peticiones
+  /peticiones/{id_peticion}:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene detalles completos de una petición específica incluyendo
+        tallajes
+      parameters:
+      - description: ID de la petición
+        in: path
+        name: id_peticion
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detalles de la petición
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: ID inválido
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Petición no encontrada
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener petición por ID
+      tags:
+      - Peticiones
+    put:
+      consumes:
+      - application/json
+      description: Actualiza campos de una petición existente
+      parameters:
+      - description: ID de la petición
+        in: path
+        name: id_peticion
+        required: true
+        type: integer
+      - description: Datos a actualizar
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.UpdatePeticionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Petición actualizada
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Datos de entrada inválidos
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Petición no encontrada
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Actualizar petición
+      tags:
+      - Peticiones
+  /peticiones/{id_peticion}/estado:
+    patch:
+      consumes:
+      - application/json
+      description: Cambia el estado de una petición con validación de transiciones
+      parameters:
+      - description: ID de la petición
+        in: path
+        name: id_peticion
+        required: true
+        type: integer
+      - description: Nuevo estado
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.CambiarEstadoPeticionDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Estado actualizado
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Transición de estado inválida
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Petición no encontrada
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Cambiar estado de petición
+      tags:
+      - Peticiones
+  /peticiones/{id_peticion}/tallaje:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene el tallaje completo de una petición específica
+      parameters:
+      - description: ID de la petición
+        in: path
+        name: id_peticion
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Tallaje de la petición
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: ID inválido
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Petición no encontrada
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener tallaje de petición
+      tags:
+      - Peticiones
+  /tipos-peticion:
+    get:
+      consumes:
+      - application/json
+      description: Obtiene catálogo de tipos de petición disponibles
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de tipos de petición
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Error del servidor
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - BearerAuth: []
+      summary: Obtener tipos de petición
+      tags:
+      - Catálogos
+securityDefinitions:
+  BearerAuth:
+    description: Token de autenticación JWT en formato Bearer
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

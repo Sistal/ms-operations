@@ -1,0 +1,20 @@
+# Git
+.git
+.gitignore
+
+# Compilados locales
+*.exe
+*.dll
+bin/
+obj/
+
+# Entorno y logs
+.env
+*.log
+
+# Editor
+.vscode/
+.idea/
+
+# Documentación
+*.md
