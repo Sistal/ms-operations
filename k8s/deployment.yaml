@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ms-operations
+  namespace: sistal
+  labels:
+    app: ms-operations
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ms-operations
+  template:
+    metadata:
+      labels:
+        app: ms-operations
+    spec:
+      containers:
+      - name: ms-operations
+        # El pipeline de GitHub Actions (Kustomize) actualizará este tag por el Commit SHA real
+        image: southamerica-east1-docker.pkg.dev/construtem/microservicios-construtem/ms-operations:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080 # Puerto estándar de tu app Go
+        
+        # AQUÍ CONSUME EL CONFIGMAP MANUAL
+        envFrom:
+        - configMapRef:
+            name: ms-operations-config
+            # optional: true # Descomenta esto si quieres que el pod inicie aunque el configmap no exista
+            
+        # Buenas prácticas: Límites de recursos
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
