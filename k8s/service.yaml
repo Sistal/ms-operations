@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ms-operations-svc
+  namespace: sistal
+  labels:
+    app: ms-operations
+spec:
+  type: ClusterIP
+  selector:
+    app: ms-operations
+  ports:
+  - port: 80        # Puerto del servicio (interno del clúster)
+    targetPort: 8080 # Puerto del contenedor Go
+    protocol: TCP

@@ -1,0 +1,53 @@
+name: CI/CD Backend Interno
+
+on:
+  push:
+    branches: [main]
+
+env:
+  PROJECT_ID: sistal-490016
+  REGION: us-central1
+  CLUSTER_NAME: sistal-qa
+  GAR_REPO: us-central1-docker.pkg.dev/sistal-490016/sistal-docker-images
+  IMAGE_NAME: ms-operations # <-- Cambia esto por el nombre de tu app
+
+jobs:
+  build-and-deploy:
+    name: Build, Push y Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Autenticarse en GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configurar Docker para Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Construir y subir imagen Docker (con Commit SHA)
+        run: |
+          IMAGE_TAG=${{ env.GAR_REPO }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          docker build -t $IMAGE_TAG .
+          docker push $IMAGE_TAG
+
+      - name: Configurar acceso a GKE
+        uses: google-github-actions/get-gke-credentials@v1
+        with:
+          cluster_name: ${{ env.CLUSTER_NAME }}
+          location: ${{ env.REGION }}
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Reemplazar TAG de imagen en los manifiestos
+        run: |
+          # Busca la palabra IMAGE_PLACEHOLDER y la cambia por el SHA del commit
+          sed -i "s/IMAGE_PLACEHOLDER/${{ github.sha }}/g" k8s/deployment.yaml
+
+      - name: Desplegar en Kubernetes
+        # Aplica todos los archivos dentro de k8s/ (deployment y service)
+        run: kubectl apply -f k8s/
+
+      - name: Verificar estado del rollout
+        run: kubectl rollout status deployment/${{ env.IMAGE_NAME }} -n sistal
