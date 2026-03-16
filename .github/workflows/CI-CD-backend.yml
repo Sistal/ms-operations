@@ -8,7 +8,7 @@ env:
   PROJECT_ID: sistal-490016
   REGION: us-central1
   CLUSTER_NAME: sistal-qa
-  GAR_REPO: us-east1-docker.pkg.dev/sistal-490016/sistal-docker-images
+  GAR_REPO: us-central1-docker.pkg.dev/sistal-490016/sistal-docker-images
   IMAGE_NAME: ms-operations # <-- Cambia esto por el nombre de tu app
 
 jobs:
