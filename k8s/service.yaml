@@ -10,6 +10,6 @@ spec:
   selector:
     app: ms-operations
   ports:
-  - port: 80        # Puerto del servicio (interno del clúster)
+  - port: 8080        # Puerto del servicio (interno del clúster)
     targetPort: 8080 # Puerto del contenedor Go
     protocol: TCP
