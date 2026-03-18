@@ -35,6 +35,12 @@ type CambiarEstadoDespachoDTO struct {
 	ResponsableRecepcion *string `json:"responsable_recepcion"`
 }
 
+// UpcomingDespachoResponse define la estructura de respuesta para despachos próximos
+type UpcomingDespachoResponse struct {
+	Garments     string    `json:"garments"`
+	DispatchDate time.Time `json:"dispatchDate"`
+}
+
 // GetDespachos godoc
 // @Summary Obtener despachos
 // @Description Obtiene lista paginada de despachos con filtros opcionales
@@ -441,4 +447,68 @@ func CambiarEstadoDespacho(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.SuccessMessageResponse("Estado de despacho actualizado", response))
+}
+
+// GetUpcomingDespachos godoc
+// @Summary Obtener despachos en camino
+// @Description Obtiene la lista de prendas que están en despachos con estado "en camino" (id 6) para un funcionario
+// @Tags Despachos
+// @Accept json
+// @Produce json
+// @Param id_funcionario query int true "ID del funcionario"
+// @Security BearerAuth
+// @Success 200 {array} UpcomingDespachoResponse
+// @Failure 400 {object} map[string]interface{} "Parámetros inválidos"
+// @Failure 500 {object} map[string]interface{} "Error del servidor"
+// @Router /despachos/upcoming [get]
+func GetUpcomingDespachos(c *gin.Context) {
+	idFuncionarioStr := c.Query("id_funcionario")
+	if idFuncionarioStr == "" {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("id_funcionario es requerido"))
+		return
+	}
+
+	// Validar que sea un número
+	if _, err := strconv.Atoi(idFuncionarioStr); err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("id_funcionario debe ser numérico"))
+		return
+	}
+
+	var peticiones []models.PeticionUniforme
+
+	// Buscar peticiones asociadas al funcionario que tengan despacho en estado 6
+	// Hacemos JOIN con Despacho para filtrar por estado
+	err := database.DB.
+		Joins("JOIN \"Despacho\" ON \"Petición Uniforme\".id_despacho = \"Despacho\".id_despacho").
+		Where("\"Petición Uniforme\".id_funcionario = ? AND \"Despacho\".id_estado_despacho = 6", idFuncionarioStr).
+		Preload("Despacho").
+		Preload("Tallajes.Prenda").
+		Find(&peticiones).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al consultar despachos en camino"))
+		return
+	}
+
+	var response []UpcomingDespachoResponse
+
+	for _, peticion := range peticiones {
+		if peticion.Despacho != nil && peticion.Despacho.FechaDespacho != nil {
+			// Por cada prenda (tallaje) en la petición, creamos una entrada
+			for _, tallaje := range peticion.Tallajes {
+				resp := UpcomingDespachoResponse{
+					Garments:     tallaje.Prenda.NombrePrenda,
+					DispatchDate: *peticion.Despacho.FechaDespacho,
+				}
+				response = append(response, resp)
+			}
+		}
+	}
+
+	// Si no hay resultados, devolver array vacío en lugar de null
+	if response == nil {
+		response = []UpcomingDespachoResponse{}
+	}
+
+	c.JSON(http.StatusOK, response)
 }

@@ -74,6 +74,7 @@ func main() {
 		despachos := v1.Group("/despachos")
 		{
 			despachos.GET("", handlers.GetDespachos)
+			despachos.GET("/upcoming", handlers.GetUpcomingDespachos)
 			despachos.GET("/:id_despacho", handlers.GetDespachoByID)
 			despachos.POST("", handlers.CreateDespacho)
 			despachos.PUT("/:id_despacho", handlers.UpdateDespacho)
@@ -94,7 +95,7 @@ func main() {
 		operaciones := v1.Group("/operaciones")
 		{
 			operaciones.GET("/estadisticas", handlers.GetEstadisticasOperaciones)
-			operaciones.GET("/dashboard", handlers.GetDashboardOperaciones)
+			operaciones.GET("/dashboard", handlers.GetDashboard)
 		}
 
 		// Notificaciones (deprecado - migrar a MS-Notifications)
