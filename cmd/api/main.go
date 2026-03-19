@@ -65,6 +65,7 @@ func main() {
 			peticiones.GET("", handlers.GetPeticiones)
 			peticiones.GET("/:id_peticion", handlers.GetPeticionByID)
 			peticiones.POST("", handlers.CreatePeticion)
+			peticiones.POST("/uniforme", handlers.CreatePeticionUniforme)
 			peticiones.PUT("/:id_peticion", handlers.UpdatePeticion)
 			peticiones.PATCH("/:id_peticion/estado", handlers.CambiarEstadoPeticion)
 			peticiones.GET("/:id_peticion/tallaje", handlers.GetTallajePeticion)

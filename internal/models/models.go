@@ -158,6 +158,17 @@ func (Uniforme) TableName() string {
 	return "\"Uniforme\""
 }
 
+// UniformePrenda mapea a la tabla "Uniforme - Prenda"
+type UniformePrenda struct {
+	IdUniforme int `gorm:"primaryKey;column:id_uniforme" json:"id_uniforme"`
+	IdPrenda   int `gorm:"primaryKey;column:id_prenda" json:"id_prenda"`
+	Cantidad   int `gorm:"column:cantidad" json:"cantidad"`
+}
+
+func (UniformePrenda) TableName() string {
+	return "\"Uniforme - Prenda\""
+}
+
 // Temporada mapea a la tabla "Temporada"
 type Temporada struct {
 	IdTemporada     int        `gorm:"primaryKey;column:id_temporada" json:"id_temporada"`
@@ -188,7 +199,7 @@ type Cargo struct {
 }
 
 func (Cargo) TableName() string {
-	return "\"Cargo\""
+	return "\"cargo\""
 }
 
 // Factura mapea a la tabla "Factura"

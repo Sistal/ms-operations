@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ValidateEstadoPeticion valida que el ID de estado esté en el rango 20-25
+// ValidateEstadoPeticion valida que el ID de estado esté en el rango 13-15
 func ValidateEstadoPeticion(id int) error {
-	if id < 20 || id > 25 {
-		return errors.New("ID de estado de petición inválido. Debe estar entre 20 y 25")
+	if id < 13 || id > 15 {
+		return errors.New("ID de estado de petición inválido. Debe estar entre 13 y 15")
 	}
 	return nil
 }
@@ -40,12 +40,12 @@ func ValidateStateTransition(from, to int, entity string) error {
 			return err
 		}
 		// Validaciones específicas de transiciones de petición
-		// Por ejemplo: no se puede pasar de Completada (24) a Pendiente (20)
-		if from == 24 && to == 20 {
-			return errors.New("no se puede cambiar de 'Completada' a 'Pendiente'")
+		// Por ejemplo: no se puede pasar de Aprobada (13) a Pendiente (15)
+		if from == 13 && to == 15 {
+			return errors.New("no se puede cambiar de 'Aprobada' a 'Pendiente'")
 		}
-		if from == 25 { // Cancelada
-			return errors.New("no se puede cambiar el estado de una petición cancelada")
+		if from == 14 { // Rechazada
+			return errors.New("no se puede cambiar el estado de una petición rechazada")
 		}
 
 	case "despacho":

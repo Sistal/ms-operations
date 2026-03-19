@@ -43,6 +43,14 @@ type CambiarEstadoPeticionDTO struct {
 	Observacion *string `json:"observacion"`
 }
 
+type CreatePeticionUniformeRequest struct {
+	IdUniforme    int    `json:"id_uniforme" binding:"required"`
+	Cantidad      int    `json:"cantidad" binding:"required,min=1"`
+	Talla         string `json:"talla" binding:"required"`
+	Motivo        string `json:"motivo" binding:"required"`
+	IdFuncionario int    `json:"id_funcionario" binding:"required"`
+}
+
 // GetPeticiones godoc
 // @Summary Obtener peticiones
 // @Description Obtiene lista paginada de peticiones de uniforme con filtros opcionales
@@ -331,8 +339,8 @@ func CreatePeticion(c *gin.Context) {
 		return
 	}
 
-	// Validar estado (default 20 si no se envía)
-	estadoID := 20
+	// Validar estado (default 15 si no se envía)
+	estadoID := 15
 	if dto.IdEstado != nil {
 		estadoID = *dto.IdEstado
 		if err := utils.ValidateEstadoPeticion(estadoID); err != nil {
@@ -638,4 +646,128 @@ func GetTallajePeticion(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.SuccessResponse(response, meta))
+}
+
+// CreatePeticionUniforme godoc
+// @Summary Crear petición simplificada de uniforme
+// @Description Crea una nueva petición de uniforme a partir de talla única y cantidad de uniformes
+// @Tags Peticiones
+// @Accept json
+// @Produce json
+// @Param input body CreatePeticionUniformeRequest true "Datos de la petición"
+// @Security BearerAuth
+// @Success 201 {object} map[string]interface{} "Petición creada exitosamente"
+// @Failure 400 {object} map[string]interface{} "Datos de entrada inválidos"
+// @Failure 500 {object} map[string]interface{} "Error del servidor"
+// @Router /peticiones/uniforme [post]
+func CreatePeticionUniforme(c *gin.Context) {
+	var req CreatePeticionUniformeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Datos de entrada inválidos: "+err.Error()))
+		return
+	}
+
+	// 1. Validar Funcionario
+	var funcionario models.Funcionario
+	if err := database.DB.First(&funcionario, req.IdFuncionario).Error; err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("El funcionario no existe"))
+		return
+	}
+
+	// 2. Validar Uniforme
+	var uniforme models.Uniforme
+	if err := database.DB.First(&uniforme, req.IdUniforme).Error; err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("El uniforme no existe"))
+		return
+	}
+
+	// 3. Resolver TipoPeticion (Motivo)
+	var tipoPeticion models.TipoPeticion
+	if err := database.DB.Where("LOWER(nombre_tipo_peticion) = LOWER(?)", req.Motivo).First(&tipoPeticion).Error; err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("El motivo (tipo petición) no es válido"))
+		return
+	}
+
+	// 4. Obtener composición del Uniforme (Prendas)
+	var uniformePrendas []models.UniformePrenda
+	if err := database.DB.Where("id_uniforme = ?", req.IdUniforme).Find(&uniformePrendas).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al obtener composición del uniforme"))
+		return
+	}
+
+	if len(uniformePrendas) == 0 {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("El uniforme seleccionado no tiene prendas asociadas o configuradas"))
+		return
+	}
+
+	// 5. Transacción
+	tx := database.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Generar ID manual para Peticion (Fix: falta sequence en DB)
+	var maxPeticionID int
+	if err := tx.Model(&models.PeticionUniforme{}).Select("COALESCE(MAX(id_peticion), 0)").Scan(&maxPeticionID).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al generar ID de petición"))
+		return
+	}
+	newPeticionID := maxPeticionID + 1
+
+	peticion := models.PeticionUniforme{
+		IDPeticion:     newPeticionID,
+		IdFuncionario:  req.IdFuncionario,
+		IdUniforme:     req.IdUniforme,
+		IdTipoPeticion: tipoPeticion.IdTipoPeticion,
+		IdEstado:       15, // Estado Pendiente (según DB)
+		FechaRegistro:  time.Now(),
+	}
+
+	if err := tx.Create(&peticion).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al crear la petición"))
+		return
+	}
+
+	// Obtener base para IDs de Tallaje
+	var maxTallajeID int
+	if err := tx.Model(&models.Tallaje{}).Select("COALESCE(MAX(id_tallaje), 0)").Scan(&maxTallajeID).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al generar ID de tallaje"))
+		return
+	}
+
+	// 6. Crear detalles de Tallaje
+	for i, up := range uniformePrendas {
+		cantidadTotal := up.Cantidad * req.Cantidad
+		tallaje := models.Tallaje{
+			IDTallaje:  maxTallajeID + 1 + i,
+			IDPeticion: peticion.IDPeticion,
+			IDPrenda:   up.IdPrenda,
+			ValorTalla: req.Talla,
+			Cantidad:   cantidadTotal,
+		}
+
+		if err := tx.Create(&tallaje).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al registrar tallaje para prenda ID: "+strconv.Itoa(up.IdPrenda)))
+			return
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Error al confirmar la transacción"))
+		return
+	}
+
+	c.JSON(http.StatusCreated, utils.SuccessMessageResponse("Petición creada exitosamente", gin.H{
+		"id_peticion":    peticion.IDPeticion,
+		"id_funcionario": peticion.IdFuncionario,
+		"id_uniforme":    peticion.IdUniforme,
+		"motivo":         req.Motivo,
+		"fecha_registro": peticion.FechaRegistro.Format("2006-01-02"),
+	}))
 }
